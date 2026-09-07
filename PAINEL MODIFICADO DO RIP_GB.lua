@@ -14,7 +14,58 @@ local Camera = workspace.CurrentCamera
 -- CONFIGURAÇÕES
 --========================================================--
 
-local SENHA = "PAINEL MODIFICADO DO RIP GB"
+local SENHAS = {
+    ["RIPGB-7K2M"] = true,
+    ["RIPGB-9Q4X"] = true,
+    ["RIPGB-3T8P"] = true,
+    ["RIPGB-6N5V"] = true,
+    ["RIPGB-2H9R"] = true,
+    ["RIPGB-8W3L"] = true,
+    ["RIPGB-4F7Z"] = true,
+    ["RIPGB-5C2J"] = true,
+    ["RIPGB-1M8K"] = true,
+    ["RIPGB-0X6Q"] = true,
+    ["RIPGB-A7P3"] = true,
+    ["RIPGB-B9L5"] = true,
+    ["RIPGB-C4N8"] = true,
+    ["RIPGB-D2V6"] = true,
+    ["RIPGB-E8R1"] = true,
+    ["RIPGB-F5K9"] = true,
+    ["RIPGB-G3T7"] = true,
+    ["RIPGB-H6M2"] = true,
+    ["RIPGB-J9Q4"] = true,
+    ["RIPGB-K1W8"] = true,
+    ["RIPGB-L5X3"] = true,
+    ["RIPGB-M7C9"] = true,
+    ["RIPGB-N2F6"] = true,
+    ["RIPGB-P8H4"] = true,
+    ["RIPGB-Q3V7"] = true,
+    ["RIPGB-R6Z1"] = true,
+    ["RIPGB-S9K5"] = true,
+    ["RIPGB-T4M8"] = true,
+    ["RIPGB-V2L6"] = true,
+    ["RIPGB-W7P3"] = true,
+    ["RIPGB-X5N9"] = true,
+    ["RIPGB-Y1C4"] = true,
+    ["RIPGB-Z8F2"] = true,
+    ["RIPGB-3H6K"] = true,
+    ["RIPGB-9J2M"] = true,
+    ["RIPGB-4Q7R"] = true,
+    ["RIPGB-6V1X"] = true,
+    ["RIPGB-8L5T"] = true,
+    ["RIPGB-2P9W"] = true,
+    ["RIPGB-7C3Z"] = true,
+    ["RIPGB-5M8F"] = true,
+    ["RIPGB-1R6H"] = true,
+    ["RIPGB-9X4K"] = true,
+    ["RIPGB-3N7Q"] = true,
+    ["RIPGB-6T2V"] = true,
+    ["RIPGB-8Z5L"] = true,
+    ["RIPGB-4W1P"] = true,
+    ["RIPGB-7F9C"] = true,
+    ["RIPGB-2K6M"] = true,
+    ["RIPGB-5Q8X"] = true
+}
 
 local SpeedValue = 16
 local FlySpeedValue = 40
@@ -824,7 +875,7 @@ MakeDraggable(FloatingButton, FloatingButton)
 
 EnterButton.MouseButton1Click:Connect(function()
 
-	if PasswordBox.Text == SENHA then
+	if SENHAS[PasswordBox.Text] then
 
 		PasswordFrame.Visible = false
 		Main.Visible = true
