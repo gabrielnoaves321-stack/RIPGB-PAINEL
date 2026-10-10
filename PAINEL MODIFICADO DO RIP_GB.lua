@@ -1,28 +1,39 @@
-
 -- PAINEL PREMIUM RIP_GB
--- LocalScript em StarterPlayerScripts
+-- Coloque em StarterPlayer > StarterPlayerScripts
+-- Cria um painel local para cada jogador.
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
-local old = playerGui:FindFirstChild("PremiumRipGB")
-if old then old:Destroy() end
-
 local gui = Instance.new("ScreenGui")
-gui.Name = "PremiumRipGB"
+gui.Name = "RIP_GB"
 gui.ResetOnSpawn = false
-gui.Parent = playerGui
+gui.Parent = player:WaitForChild("PlayerGui")
 
-local red = Color3.fromRGB(235, 35, 48)
-local bg = Color3.fromRGB(20, 20, 24)
-local card = Color3.fromRGB(36, 36, 43)
-local white = Color3.fromRGB(245, 245, 245)
+local state = {
+    Speed = 16,
+    FlySpeed = 30,
+    SpinSpeed = 10,
+    Fly = false,
+    Spin = false,
+    Noclip = false,
+    Box = false,
+    Names = false,
+    Health = false,
+}
 
-local function create(class, props, parent)
+local function character()
+    return player.Character
+end
+
+local function humanoid()
+    local c = character()
+    return c and c:FindFirstChildOfClass("Humanoid")
+end
+
+local function make(class, props, parent)
     local obj = Instance.new(class)
     for k, v in pairs(props) do
         obj[k] = v
@@ -31,238 +42,172 @@ local function create(class, props, parent)
     return obj
 end
 
-local panel = create("Frame", {
-    Name = "Main",
-    Size = UDim2.fromOffset(470, 365),
-    Position = UDim2.new(0.5, -235, 0.5, -182),
-    BackgroundColor3 = bg,
+local panel = make("Frame", {
+    Size = UDim2.fromOffset(350, 420),
+    Position = UDim2.new(0.5, -175, 0.5, -210),
+    BackgroundColor3 = Color3.fromRGB(22, 22, 27),
     BorderSizePixel = 0,
-    ClipsDescendants = true,
+    Active = true,
 }, gui)
 
-create("UICorner", {CornerRadius = UDim.new(0, 12)}, panel)
-create("UIStroke", {Color = red, Thickness = 2}, panel)
-
-local header = create("Frame", {
-    Size = UDim2.new(1, 0, 0, 48),
-    BackgroundColor3 = Color3.fromRGB(29, 24, 28),
-    BorderSizePixel = 0,
+make("UICorner", {CornerRadius = UDim.new(0, 10)}, panel)
+make("UIStroke", {
+    Color = Color3.fromRGB(230, 35, 50),
+    Thickness = 2,
 }, panel)
 
-create("TextLabel", {
-    Size = UDim2.new(1, -55, 1, 0),
-    Position = UDim2.fromOffset(14, 0),
+make("TextLabel", {
+    Size = UDim2.new(1, -45, 0, 45),
+    Position = UDim2.fromOffset(12, 0),
     BackgroundTransparency = 1,
-    Text = "☠  PAINEL PREMIUM RIP_GB",
-    TextColor3 = red,
+    Text = "PAINEL PREMIUM RIP_GB",
+    TextColor3 = Color3.fromRGB(255, 65, 75),
     Font = Enum.Font.GothamBold,
-    TextSize = 18,
+    TextSize = 16,
     TextXAlignment = Enum.TextXAlignment.Left,
-}, header)
+}, panel)
 
-local close = create("TextButton", {
-    Size = UDim2.fromOffset(42, 42),
-    Position = UDim2.new(1, -44, 0, 3),
-    BackgroundTransparency = 1,
-    Text = "×",
-    TextColor3 = white,
-    TextSize = 27,
-}, header)
+local close = make("TextButton", {
+    Size = UDim2.fromOffset(32, 30),
+    Position = UDim2.new(1, -38, 0, 7),
+    Text = "X",
+    TextColor3 = Color3.new(1, 1, 1),
+    BackgroundColor3 = Color3.fromRGB(155, 25, 35),
+    Font = Enum.Font.GothamBold,
+}, panel)
 
--- Arrastar pelo cabeçalho
-do
-    local dragging = false
-    local dragStart, startPosition
+close.MouseButton1Click:Connect(function()
+    gui.Enabled = false
+end)
 
-    header.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPosition = panel.Position
-        end
-    end)
-
-    UIS.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType ==
-            Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            panel.Position = UDim2.new(
-                startPosition.X.Scale,
-                startPosition.X.Offset + delta.X,
-                startPosition.Y.Scale,
-                startPosition.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    UIS.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-end
-
-local sidebar = create("Frame", {
-    Position = UDim2.fromOffset(10, 58),
-    Size = UDim2.new(0, 125, 1, -68),
+local tabs = make("Frame", {
+    Position = UDim2.fromOffset(10, 48),
+    Size = UDim2.new(1, -20, 0, 35),
     BackgroundTransparency = 1,
 }, panel)
 
-create("UIListLayout", {
-    Padding = UDim.new(0, 8),
-    SortOrder = Enum.SortOrder.LayoutOrder,
-}, sidebar)
+make("UIListLayout", {
+    FillDirection = Enum.FillDirection.Horizontal,
+    Padding = UDim.new(0, 5),
+}, tabs)
 
-local pageHolder = create("Frame", {
-    Position = UDim2.fromOffset(145, 58),
-    Size = UDim2.new(1, -155, 1, -68),
-    BackgroundTransparency = 1,
-    ClipsDescendants = true,
+local content = make("ScrollingFrame", {
+    Position = UDim2.fromOffset(10, 91),
+    Size = UDim2.new(1, -20, 1, -101),
+    BackgroundColor3 = Color3.fromRGB(30, 30, 36),
+    BorderSizePixel = 0,
+    ScrollBarThickness = 4,
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    CanvasSize = UDim2.new(),
 }, panel)
+
+make("UIPadding", {
+    PaddingTop = UDim.new(0, 8),
+    PaddingLeft = UDim.new(0, 8),
+    PaddingRight = UDim.new(0, 8),
+    PaddingBottom = UDim.new(0, 8),
+}, content)
 
 local pages = {}
-local selectedTab
+local layouts = {}
 
-local function makePage(name)
-    local page = create("ScrollingFrame", {
+for _, name in ipairs({"PERSONAGEM", "COMBATE", "ESP"}) do
+    local page = make("Frame", {
         Name = name,
-        Size = UDim2.fromScale(1, 1),
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        ScrollBarThickness = 5,
-        ScrollBarImageColor3 = red,
-        CanvasSize = UDim2.new(),
-        AutomaticCanvasSize = Enum.AutomaticSize.Y,
         Visible = false,
-    }, pageHolder)
+    }, content)
 
-    create("UIPadding", {
-        PaddingRight = UDim.new(0, 7),
-        PaddingBottom = UDim.new(0, 8),
-    }, page)
-
-    create("UIListLayout", {
-        Padding = UDim.new(0, 9),
+    make("UIListLayout", {
+        Padding = UDim.new(0, 8),
         SortOrder = Enum.SortOrder.LayoutOrder,
     }, page)
 
     pages[name] = page
-    return page
-end
 
-local function showPage(name)
-    for pageName, page in pairs(pages) do
-        page.Visible = pageName == name
-    end
-    selectedTab = name
-
-    for _, obj in ipairs(sidebar:GetChildren()) do
-        if obj:IsA("TextButton") then
-            obj.BackgroundColor3 =
-                obj.Name == name and red or card
-        end
-    end
-end
-
-local function makeTab(name, label)
-    local b = create("TextButton", {
+    local tab = make("TextButton", {
         Name = name,
-        Size = UDim2.new(1, 0, 0, 40),
-        BackgroundColor3 = card,
-        Text = label,
-        TextColor3 = white,
+        Size = UDim2.new(1/3, -4, 1, 0),
+        Text = name,
+        TextSize = 10,
         Font = Enum.Font.GothamBold,
-        TextSize = 13,
-        BorderSizePixel = 0,
-    }, sidebar)
+        TextColor3 = Color3.new(1, 1, 1),
+        BackgroundColor3 = Color3.fromRGB(135, 25, 35),
+    }, tabs)
 
-    create("UICorner", {CornerRadius = UDim.new(0, 7)}, b)
-    b.Activated:Connect(function()
-        showPage(name)
+    make("UICorner", {CornerRadius = UDim.new(0, 5)}, tab)
+
+    tab.MouseButton1Click:Connect(function()
+        for pageName, p in pairs(pages) do
+            p.Visible = pageName == name
+        end
     end)
 end
 
-local characterPage = makePage("PERSONAGEM")
-local aimPage = makePage("AIMBOT")
-local espPage = makePage("ESP")
+pages.PERSONAGEM.Visible = true
 
-makeTab("PERSONAGEM", "PERSONAGEM")
-makeTab("AIMBOT", "AIMBOT")
-makeTab("ESP", "ESP")
-
-local function addButton(page, text, callback)
-    local b = create("TextButton", {
-        Size = UDim2.new(1, -5, 0, 38),
-        BackgroundColor3 = card,
+local function button(pageName, text, callback)
+    local b = make("TextButton", {
+        Size = UDim2.new(1, -4, 0, 36),
         Text = text,
-        TextColor3 = white,
         Font = Enum.Font.GothamMedium,
         TextSize = 13,
-        TextWrapped = true,
-        BorderSizePixel = 0,
-    }, page)
+        TextColor3 = Color3.new(1, 1, 1),
+        BackgroundColor3 = Color3.fromRGB(48, 48, 57),
+    }, pages[pageName])
 
-    create("UICorner", {CornerRadius = UDim.new(0, 7)}, b)
-    b.Activated:Connect(callback)
+    make("UICorner", {CornerRadius = UDim.new(0, 6)}, b)
+    b.MouseButton1Click:Connect(function()
+        callback(b)
+    end)
     return b
 end
 
-local function addSlider(page, label, min, max, initial, callback)
-    local holder = create("Frame", {
-        Size = UDim2.new(1, -5, 0, 57),
-        BackgroundColor3 = card,
-        BorderSizePixel = 0,
-    }, page)
+local function slider(pageName, label, min, max, initial, callback)
+    local holder = make("Frame", {
+        Size = UDim2.new(1, -4, 0, 62),
+        BackgroundColor3 = Color3.fromRGB(40, 40, 47),
+    }, pages[pageName])
 
-    create("UICorner", {CornerRadius = UDim.new(0, 7)}, holder)
-
-    local value = initial
-    create("TextLabel", {
-        Name = "Label",
-        Size = UDim2.new(1, -16, 0, 25),
-        Position = UDim2.fromOffset(8, 2),
+    local caption = make("TextLabel", {
+        Size = UDim2.new(1, -12, 0, 26),
+        Position = UDim2.fromOffset(6, 0),
         BackgroundTransparency = 1,
-        Text = label .. ": " .. value,
-        TextColor3 = white,
+        TextColor3 = Color3.new(1, 1, 1),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Text = label .. ": " .. initial,
         Font = Enum.Font.Gotham,
         TextSize = 12,
-        TextXAlignment = Enum.TextXAlignment.Left,
     }, holder)
 
-    local bar = create("TextButton", {
-        Position = UDim2.new(0, 8, 0, 34),
-        Size = UDim2.new(1, -16, 0, 12),
-        BackgroundColor3 = Color3.fromRGB(75, 75, 82),
+    local bar = make("TextButton", {
+        Position = UDim2.fromOffset(8, 35),
+        Size = UDim2.new(1, -16, 0, 13),
         Text = "",
         AutoButtonColor = false,
+        BackgroundColor3 = Color3.fromRGB(75, 75, 83),
     }, holder)
 
-    create("UICorner", {CornerRadius = UDim.new(1, 0)}, bar)
-
-    local fill = create("Frame", {
+    local fill = make("Frame", {
         Size = UDim2.new((initial-min)/(max-min), 0, 1, 0),
-        BackgroundColor3 = red,
+        BackgroundColor3 = Color3.fromRGB(230, 35, 50),
         BorderSizePixel = 0,
     }, bar)
 
-    create("UICorner", {CornerRadius = UDim.new(1, 0)}, fill)
+    local dragging = false
+    local value = initial
 
     local function update(x)
-        local pct = math.clamp(
-            (x - bar.AbsolutePosition.X) /
-            math.max(bar.AbsoluteSize.X, 1), 0, 1
+        local a = math.clamp(
+            (x - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1
         )
-        value = math.floor(min + (max-min)*pct)
-        fill.Size = UDim2.new(pct, 0, 1, 0)
-        holder.Label.Text = label .. ": " .. value
+        value = math.floor(min + (max-min)*a)
+        fill.Size = UDim2.new(a, 0, 1, 0)
+        caption.Text = label .. ": " .. value
         callback(value)
     end
-
-    local dragging = false
-
-    bar.Activated:Connect(function()
-        update(UIS:GetMouseLocation().X)
-    end)
 
     bar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -272,8 +217,7 @@ local function addSlider(page, label, min, max, initial, callback)
     end)
 
     UIS.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType ==
-            Enum.UserInputType.MouseMovement then
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             update(input.Position.X)
         end
     end)
@@ -285,223 +229,208 @@ local function addSlider(page, label, min, max, initial, callback)
     end)
 end
 
--- PERSONAGEM
-local speedOn = false
-local speed = 50
-local flyOn = false
-local flySpeed = 60
-local flyConnection
-
-local function humanoid()
-    local char = player.Character
-    return char and char:FindFirstChildOfClass("Humanoid")
+local function toggle(pageName, label, key, callback)
+    button(pageName, label .. ": OFF", function(b)
+        state[key] = not state[key]
+        b.Text = label .. (state[key] and ": ON" or ": OFF")
+        b.BackgroundColor3 = state[key]
+            and Color3.fromRGB(155, 30, 42)
+            or Color3.fromRGB(48, 48, 57)
+        callback(state[key])
+    end)
 end
 
-addButton(characterPage, "Velocidade: DESLIGADA", function()
-    speedOn = not speedOn
+-- Personagem
+slider("PERSONAGEM", "Speed", 16, 50, 16, function(v)
+    state.Speed = v
     local h = humanoid()
-    if h then
-        h.WalkSpeed = speedOn and speed or 16
-    end
+    if h then h.WalkSpeed = v end
 end)
 
-addSlider(characterPage, "Velocidade", 16, 350, speed, function(v)
-    speed = v
-    if speedOn then
-        local h = humanoid()
-        if h then h.WalkSpeed = speed end
-    end
+slider("PERSONAGEM", "Fly Speed", 10, 80, 30, function(v)
+    state.FlySpeed = v
 end)
 
-local flyButton
-local function stopFly()
-    flyOn = false
-    if flyConnection then
-        flyConnection:Disconnect()
-        flyConnection = nil
+slider("PERSONAGEM", "Spin Speed", 1, 30, 10, function(v)
+    state.SpinSpeed = v
+end)
+
+toggle("PERSONAGEM", "Fly", "Fly", function() end)
+toggle("PERSONAGEM", "Spin", "Spin", function() end)
+toggle("PERSONAGEM", "Noclip", "Noclip", function() end)
+
+-- Combate: mira de treino fica reservada para integração própria do jogo.
+slider("COMBATE", "FOV", 30, 300, 100, function(v)
+    state.FOV = v
+end)
+
+toggle("COMBATE", "Aimbot de treino", "Aimbot", function() end)
+
+-- ESP dos jogadores
+local drawings = {}
+
+local function clearESP(p)
+    if drawings[p] then
+        for _, item in ipairs(drawings[p]) do
+            item:Destroy()
+        end
+        drawings[p] = nil
     end
-
-    local char = player.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    local h = humanoid()
-
-    if root then
-        local bv = root:FindFirstChild("RipGB_Velocity")
-        local bg = root:FindFirstChild("RipGB_Gyro")
-        if bv then bv:Destroy() end
-        if bg then bg:Destroy() end
-    end
-
-    if h then h.PlatformStand = false end
-    if flyButton then flyButton.Text = "Voo: DESLIGADO" end
 end
 
-local function startFly()
-    local char = player.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    local h = humanoid()
-    if not root or not h then return end
+local function createESP(p)
+    if p == player or drawings[p] then return end
+    local c = p.Character
+    local head = c and c:FindFirstChild("Head")
+    local hum = c and c:FindFirstChildOfClass("Humanoid")
+    if not head or not hum then return end
 
-    stopFly()
-    flyOn = true
-    h.PlatformStand = true
+    local items = {}
 
-    local bv = Instance.new("BodyVelocity")
-    bv.Name = "RipGB_Velocity"
-    bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-    bv.Parent = root
+    if state.Names or state.Health then
+        local bb = make("BillboardGui", {
+            Name = "RIP_ESP",
+            Size = UDim2.fromOffset(150, 38),
+            StudsOffset = Vector3.new(0, 2.8, 0),
+            AlwaysOnTop = true,
+            Adornee = head,
+        }, gui)
 
-    local bg = Instance.new("BodyGyro")
-    bg.Name = "RipGB_Gyro"
-    bg.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
-    bg.P = 1e4
-    bg.Parent = root
+        local label = make("TextLabel", {
+            Size = UDim2.fromScale(1, 1),
+            BackgroundTransparency = 1,
+            TextColor3 = Color3.new(1, 1, 1),
+            TextStrokeTransparency = 0,
+            Font = Enum.Font.GothamBold,
+            TextSize = 12,
+        }, bb)
 
-    flyConnection = RunService.Heartbeat:Connect(function()
-        if not flyOn or not root.Parent then
-            stopFly()
-            return
+        local function refresh()
+            if not bb.Parent then return end
+            local lines = {}
+            if state.Names then table.insert(lines, p.Name) end
+            if state.Health then
+                table.insert(lines, "HP: " .. math.floor(hum.Health))
+            end
+            label.Text = table.concat(lines, "\n")
         end
 
-        local cam = workspace.CurrentCamera
-        local dir = Vector3.zero
+        refresh()
+        table.insert(items, bb)
 
-        if UIS:IsKeyDown(Enum.KeyCode.W) then dir += cam.CFrame.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.S) then dir -= cam.CFrame.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.D) then dir += cam.CFrame.RightVector end
-        if UIS:IsKeyDown(Enum.KeyCode.A) then dir -= cam.CFrame.RightVector end
-        if UIS:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.yAxis end
-        if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.yAxis end
+        table.insert(items, hum.HealthChanged:Connect(function()
+            refresh()
+        end))
+    end
 
-        bv.Velocity = dir.Magnitude > 0 and dir.Unit * flySpeed or Vector3.zero
-        bg.CFrame = cam.CFrame
-    end)
+    if state.Box then
+        local box = make("Highlight", {
+            Name = "RIP_Box",
+            Adornee = c,
+            FillTransparency = 1,
+            OutlineColor = Color3.fromRGB(255, 45, 60),
+            DepthMode = Enum.HighlightDepthMode.AlwaysOnTop,
+        }, gui)
+        table.insert(items, box)
+    end
 
-    flyButton.Text = "Voo: LIGADO (G)"
+    drawings[p] = items
 end
 
-flyButton = addButton(characterPage, "Voo: DESLIGADO (G)", function()
-    if flyOn then
-        stopFly()
-    else
-        startFly()
-    end
-end)
-
-addSlider(characterPage, "Velocidade do voo", 10, 350, flySpeed, function(v)
-    flySpeed = v
-end)
-
--- AIMBOT: controles visuais para integração ao combate do próprio jogo.
-local aimOn = false
-local fov = 120
-
-local circle = create("Frame", {
-    Name = "FOVCircle",
-    AnchorPoint = Vector2.new(0.5, 0.5),
-    BackgroundTransparency = 1,
-    Size = UDim2.fromOffset(fov*2, fov*2),
-    Visible = false,
-}, gui)
-
-create("UICorner", {CornerRadius = UDim.new(1, 0)}, circle)
-create("UIStroke", {Color = red, Thickness = 2}, circle)
-
-local aimButton
-aimButton = addButton(aimPage, "Aimbot do jogo: DESLIGADO", function()
-    aimOn = not aimOn
-    aimButton.Text = "Aimbot do jogo: " ..
-        (aimOn and "LIGADO" or "DESLIGADO")
-end)
-
-addSlider(aimPage, "FOV", 20, 400, fov, function(v)
-    fov = v
-end)
-
-local aimInfo = create("TextLabel", {
-    Size = UDim2.new(1, -5, 0, 70),
-    BackgroundColor3 = card,
-    Text = "O botão controla o estado da assistência. A seleção e o acompanhamento da cabeça precisam ser conectados à lógica de combate do teu próprio jogo.",
-    TextColor3 = white,
-    TextWrapped = true,
-    Font = Enum.Font.Gotham,
-    TextSize = 12,
-}, aimPage)
-
--- ESP
-local espOn = false
-local espButton
-
-local function updateESP()
+local function refreshESP()
     for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= player and p.Character then
-            local char = p.Character
-            local existing = char:FindFirstChild("RipGB_Highlight")
+        clearESP(p)
+        createESP(p)
+    end
+end
 
-            if espOn and not existing then
-                local highlight = Instance.new("Highlight")
-                highlight.Name = "RipGB_Highlight"
-                highlight.FillTransparency = 0.85
-                highlight.OutlineColor = red
-                highlight.Adornee = char
-                highlight.Parent = char
-            elseif not espOn and existing then
-                existing:Destroy()
+toggle("ESP", "ESP Box", "Box", refreshESP)
+toggle("ESP", "ESP Name", "Names", refreshESP)
+toggle("ESP", "ESP Vida", "Health", refreshESP)
+
+Players.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function()
+        task.wait(1)
+        createESP(p)
+    end)
+end)
+
+Players.PlayerRemoving:Connect(clearESP)
+
+-- Movimento local e restauração ao desativar.
+local original = {}
+local function remember(part)
+    if original[part] == nil then
+        original[part] = part.CanCollide
+    end
+end
+
+local function restoreCollision()
+    for part, canCollide in pairs(original) do
+        if part.Parent then part.CanCollide = canCollide end
+    end
+    table.clear(original)
+end
+
+RunService.Heartbeat:Connect(function(dt)
+    local c = character()
+    local h = humanoid()
+    local root = c and c:FindFirstChild("HumanoidRootPart")
+    if not c or not h or not root then return end
+
+    h.WalkSpeed = state.Speed
+
+    if state.Noclip then
+        for _, part in ipairs(c:GetDescendants()) do
+            if part:IsA("BasePart") then
+                remember(part)
+                part.CanCollide = false
             end
         end
+    else
+        restoreCollision()
     end
-end
 
-espButton = addButton(espPage, "ESP: DESLIGADO", function()
-    espOn = not espOn
-    espButton.Text = "ESP: " .. (espOn and "LIGADO" or "DESLIGADO")
-    updateESP()
-end)
+    if state.Spin then
+        root.AssemblyAngularVelocity = Vector3.new(
+            0, state.SpinSpeed, 0
+        )
+    end
 
-addButton(espPage, "Remover contornos ESP", function()
-    espOn = false
-    espButton.Text = "ESP: DESLIGADO"
-    updateESP()
-end)
+    if state.Fly then
+        local camera = workspace.CurrentCamera
+        local direction = Vector3.zero
 
-RunService.RenderStepped:Connect(function()
-    local mouse = UIS:GetMouseLocation()
-    circle.Position = UDim2.fromOffset(mouse.X, mouse.Y)
-    circle.Size = UDim2.fromOffset(fov*2, fov*2)
-    circle.Visible = aimOn
-    updateESP()
-end)
+        if UIS:IsKeyDown(Enum.KeyCode.W) then
+            direction += camera.CFrame.LookVector
+        end
+        if UIS:IsKeyDown(Enum.KeyCode.S) then
+            direction -= camera.CFrame.LookVector
+        end
+        if UIS:IsKeyDown(Enum.KeyCode.D) then
+            direction += camera.CFrame.RightVector
+        end
+        if UIS:IsKeyDown(Enum.KeyCode.A) then
+            direction -= camera.CFrame.RightVector
+        end
+        if UIS:IsKeyDown(Enum.KeyCode.Space) then
+            direction += Vector3.yAxis
+        end
+        if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
+            direction -= Vector3.yAxis
+        end
 
-local floating = create("TextButton", {
-    Size = UDim2.fromOffset(52, 52),
-    Position = UDim2.new(0, 18, 0.5, -26),
-    BackgroundColor3 = red,
-    Text = "☠",
-    TextColor3 = white,
-    TextSize = 29,
-}, gui)
-create("UICorner", {CornerRadius = UDim.new(1, 0)}, floating)
-
-floating.Activated:Connect(function()
-    panel.Visible = not panel.Visible
-end)
-
-close.Activated:Connect(function()
-    panel.Visible = false
-end)
-
-UIS.InputBegan:Connect(function(input, processed)
-    if not processed and input.KeyCode == Enum.KeyCode.F4 then
-        panel.Visible = not panel.Visible
+        root.AssemblyLinearVelocity =
+            direction.Magnitude > 0
+            and direction.Unit * state.FlySpeed
+            or Vector3.zero
     end
 end)
 
 player.CharacterAdded:Connect(function()
-    task.wait(1)
-    if speedOn then
-        local h = humanoid()
-        if h then h.WalkSpeed = speed end
-    end
+    task.wait(0.5)
+    local h = humanoid()
+    if h then h.WalkSpeed = state.Speed end
 end)
 
-showPage("PERSONAGEM")
+print("PAINEL RIP_GB carregado")
